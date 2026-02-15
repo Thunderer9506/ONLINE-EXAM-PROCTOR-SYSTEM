@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, redirect, session, flash, url_for
 from flask_session import Session
 from database.mongo import users, violations, exam_sessions, exam_results
+from database.demo_user import create_demo_users
 from suspicious_score import get_session_score, get_violation_breakdown
 import bcrypt
 import datetime
@@ -300,5 +301,6 @@ if __name__ == "__main__":
     print(f"Demo Login: student@demo.com / password123")
     print(f"Admin Login: admin@demo.com / admin123")
     print("="*50 + "\n")
+    # create_demo_users()
     
     app.run(debug=True, port=5000)
