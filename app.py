@@ -258,6 +258,8 @@ if __name__ == "__main__":
     if not os.path.exists('uploads'):
         os.makedirs('uploads')
     
+    create_demo_users()
+    
     print("\n" + "="*50)
     print("*** Online Exam Proctor System ***")
     print("="*50)
