@@ -2,10 +2,6 @@
 
 A comprehensive Python-based AI-powered online examination proctoring system that prevents cheating through real-time monitoring, face detection, and behavior analysis.
 
-![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
-![Flask](https://img.shields.io/badge/Flask-2.0+-green.svg)
-![MongoDB](https://img.shields.io/badge/MongoDB-4.0+-brightgreen.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 ## ✨ Features
 
@@ -150,25 +146,6 @@ To add more questions, edit the `EXAM_QUESTIONS` list in `app.py`.
 
 **Threshold**: Sessions with 50+ suspicious points are flagged for review.
 
-## 🐛 Troubleshooting
-
-### MongoDB Connection Failed
-- **Windows**: Start MongoDB service with `net start MongoDB`
-- **Linux/Mac**: Run `sudo systemctl start mongod`
-- Check if MongoDB is running on port 27017
-
-### Webcam Not Working
-- Grant camera permissions to your browser
-- Check if antivirus/firewall is blocking camera access
-- Ensure no other application is using the webcam
-
-### Face Recognition Installation Issues
-- On Windows: Install Visual C++ Build Tools
-- On Mac: Install cmake with `brew install cmake`
-- Use Python 3.8-3.10 for best compatibility
-
-### Port Already in Use
-- Change the port in `app.py`: `app.run(debug=True, port=5001)`
 
 ## 🔒 Security Features
 
@@ -218,10 +195,6 @@ To add more questions, edit the `EXAM_QUESTIONS` list in `app.py`.
 **Ayush Sharma**
 - Email: ayush.sharma.cs28@iilm.edu
 
-
-## 📄 License
-
-This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
 
