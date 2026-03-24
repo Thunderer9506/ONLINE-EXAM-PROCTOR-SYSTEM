@@ -1,106 +1,81 @@
 # 🚀 Quick Start Guide - Online Exam Proctor System
 
 ## Prerequisites Check
+
 - ✅ Python 3.8+ installed
-- ⚠️ MongoDB installed and running
-- ✅ Dependencies installed (`flask-session`, `pyjwt`, etc.)
+- ✅ uv package manager installed (`pip install uv`)
+- ✅ MongoDB Atlas cloud database (URI configured in `.env`)
+- ✅ Webcam for proctoring features
+- ✅ Modern web browser (Chrome, Firefox, Edge)
 
 ## How to Run
 
-### Option 1: Automated Script (Easiest)
+### 1. Install uv Package Manager (if not already installed)
 
-**Windows:**
 ```bash
-run.bat
+# Install uv using pip
+pip install uv
+
+# Verify installation
+uv --version
 ```
 
-**Linux/Mac:**
+### 2. Set Up Project Environment
+
 ```bash
-chmod +x run.sh
-./run.sh
+# Clone or navigate to project directory
+cd ONLINE-EXAM-PROCTOR-SYSTEM
+
+# Create virtual environment with uv
+uv venv
+
+# Activate virtual environment
+# Windows:
+.venv\Scripts\activate
+# Linux/Mac:
+source .venv/bin/activate
 ```
 
-### Option 2: Manual Steps
+### 3. Install Dependencies
 
-1. **Start MongoDB**
-   ```bash
-   # Check if MongoDB is running
-   # Windows: Services panel or 'sc query MongoDB'
-   # Linux/Mac: 'systemctl status mongod'
-   
-   # Start MongoDB
-   net start MongoDB  # Windows
-   sudo systemctl start mongod  # Linux/Mac
-   ```
+```bash
+# Install all dependencies using uv
+uv sync
 
-2. **Open Terminal in Project Directory**
-   ```bash
-   cd "c:\Users\AKSHIT GARG\OneDrive\Desktop\ONLINE EXAM PROCTOR SYSTEM"
-   ```
+# Or install specific packages
+uv add flask flask-socketio python-socketio opencv-python numpy pymongo bcrypt pyjwt flask-session flask-cors
+```
 
-3. **Run Application**
-   ```bash
-   python app.py
-   ```
+### 4. Configure Environment Variables
 
-4. **Open Browser**
-   ```
-   http://localhost:5000
-   ```
+Create a `.env` file in the project root:
+
+```env
+MONGO_URI=mongodb+srv://your-username:your-password@cluster.mongodb.net/your-database
+SECRET_KEY=your-secret-key-here
+FLASK_ENV=development
+```
+
+### 5. Run the Application
+
+```bash
+# Start the Flask application with SocketIO
+python app.py
+```
+
+The application will be available at: http://localhost:5000
+
 
 ---
-
-## Demo Login Credentials
-
-### Student Account
-```
-Email: student@demo.com
-Password: password123
-```
-
-### Admin Account
-```
-Email: admin@demo.com
-Password: admin123
-```
-
----
-
 ## Application URLs
-
 | Page | URL | Access |
 |------|-----|--------|
-| Login | http://localhost:5000 | Public |
-| Register |http://localhost:5000/register | Public |
-| Exam | http://localhost:5000/exam | Students |
-| Dashboard | http://localhost:5000/dashboard | Admins |
-
+| Login | <http://localhost:5000> | Public |
+| Register |<http://localhost:5000/register> | Public |
+| Exam | <http://localhost:5000/exam> | Students |
+| Dashboard | <http://localhost:5000/dashboard> | Admins |
 ---
-
-## Common Issues
-
-### MongoDB Not Running
-```
-Error: MongoDB connection failed
-Solution: Run 'net start MongoDB' (Windows) or 'sudo systemctl start mongod' (Linux/Mac)
-```
-
-### Port Already in Use
-```
-Error: Address already in use
-Solution: Change port in app.py line 296: app.run(debug=True, port=5001)
-```
-
-### Module Not Found
-```
-Error: ModuleNotFoundError: No module named 'flask_session'
-Solution: pip install -r requirements.txt
-```
-
----
-
 ## Testing the Application
-
 1. **Register a new student** → Creates account
 2. **Login with student account** → Redirects to exam
 3. **Allow webcam access** → Required for proctoring
@@ -109,11 +84,35 @@ Solution: pip install -r requirements.txt
 6. **Submit exam** → See results
 7. **Login as admin** → View dashboard
 8. **Check violations** → Review all activity
-
 ---
 
-## Project is Ready! ✅
+## Demo Credentials
 
+### Student Account
+- **Email**: student@demo.com
+- **Password**: password123
+
+### Admin Account
+- **Email**: admin@demo.com
+- **Password**: admin123
+
+## Troubleshooting
+
+### Common Issues
+
+1. **ModuleNotFoundError**: Make sure virtual environment is activated
+2. **MongoDB Connection Error**: Check `.env` file for correct URI
+3. **Webcam Not Working**: Check browser permissions and camera access
+4. **WebSocket Connection Failed**: Ensure flask-socketio is installed
+
+### Development Tips
+
+- Use `uv sync` to keep dependencies up to date
+- Check browser console for WebSocket connection status
+- Monitor server logs for face detection errors
+- Test with different browsers for compatibility
+
+## Project is Ready! ✅
 All features implemented:
 - ✅ Authentication & Sessions
 - ✅ Exam Interface with timer
@@ -122,5 +121,16 @@ All features implemented:
 - ✅ Admin Dashboard
 - ✅ Modern UI Design
 - ✅ Complete Documentation
-
 **Just start MongoDB and run the application!**
+
+## Architecture Overview
+
+```
+Frontend (Browser) ←→ WebSocket ←→ Face Detection ←→ MongoDB Atlas
+     ↓                              ↓
+   Exam UI                    Violation Logging
+     ↓                              ↓
+   Results ←→ Flask Routes ←→ Admin Dashboard
+```
+
+**🎯 Ready to go! Your AI-powered exam proctoring system is now running with modern WebSocket-based face detection and cloud database storage.**

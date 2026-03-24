@@ -2,10 +2,6 @@
 
 A comprehensive Python-based AI-powered online examination proctoring system that prevents cheating through real-time monitoring, face detection, and behavior analysis.
 
-![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
-![Flask](https://img.shields.io/badge/Flask-2.0+-green.svg)
-![MongoDB](https://img.shields.io/badge/MongoDB-4.0+-brightgreen.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 ## ✨ Features
 
@@ -16,10 +12,10 @@ A comprehensive Python-based AI-powered online examination proctoring system tha
 
 ### 📹 Real-Time Proctoring
 - **Live Webcam Monitoring** with video feed display
-- **Face Detection** using OpenCV and face-recognition library
+- **WebSocket-based Face Detection** using OpenCV
 - **Tab Switch Detection** with automatic violation logging
 - **Multiple Face Detection** to prevent impersonation
-- **Violation Counter** with real-time updates
+- **Real-time Violation Counter** with instant feedback
 
 ### 📝 Exam Management
 - **Interactive MCQ Interface** with radio button selections
@@ -42,71 +38,23 @@ A comprehensive Python-based AI-powered online examination proctoring system tha
 
 ## 🛠️ Technology Stack
 
-- **Backend**: Python 3.8+, Flask 2.0+
-- **Database**: MongoDB 4.0+
+- **Backend**: Python 3.8+, Flask 3.0+
+- **Database**: MongoDB (Cloud-based)
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **Computer Vision**: OpenCV, face-recognition
+- **Real-time Communication**: WebSocket (Socket.IO)
+- **Computer Vision**: OpenCV, NumPy
 - **Authentication**: bcrypt, PyJWT
-- **Session Management**: Flask-Session
+- **Package Manager**: uv (modern Python package manager)
 
 ## 📋 Prerequisites
 
 Before running the application, ensure you have:
 
 1. **Python 3.8 or higher** installed
-2. **MongoDB** installed and running
+2. **uv** package manager installed (`pip install uv`)
 3. **Webcam** for proctoring features
 4. **Modern web browser** (Chrome, Firefox, Edge)
-
-## 🚀 Installation & Setup
-
-### Step 1: Clone or Navigate to Project Directory
-
-```bash
-cd "C:\Users\AKSHIT GARG\OneDrive\Desktop\ONLINE EXAM PROCTOR SYSTEM"
-```
-
-### Step 2: Install Python Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-**Note**: Installing `face-recognition` may take a few minutes as it includes dlib and other dependencies.
-
-### Step 3: Start MongoDB
-
-**Windows:**
-```bash
-# Start MongoDB service
-net start MongoDB
-
-# OR run mongod directly
-mongod
-```
-
-**Linux/Mac:**
-```bash
-sudo systemctl start mongod
-```
-
-### Step 4: Create Demo Users
-
-```bash
-python database/demo_user.py
-```
-
-This creates:
-- **Student Account**: `student@demo.com` / `password123`
-- **Admin Account**: `admin@demo.com` / `admin123`
-
-### Step 5: Run the Application
-
-```bash
-python app.py
-```
-
-The application will start on **http://localhost:5000**
+5. **MongoDB Atlas** cloud database (URI configured in `.env`)
 
 ## 📖 How to Use
 
@@ -149,10 +97,14 @@ ONLINE EXAM PROCTOR SYSTEM/
 │
 ├── app.py                      # Main Flask application
 ├── config.py                   # Configuration settings
-├── face_auth.py               # Face verification module
-├── proctor.py                 # Standalone face detection script
-├── suspicious_score.py        # Violation scoring system
-├── requirements.txt           # Python dependencies
+├── pyproject.toml              # uv project configuration
+├── .env                       # Environment variables (MongoDB URI)
+├── suspicious_score.py          # Violation scoring system
+│
+├── utils/                     # Modular utilities
+│   ├── face_detection.py       # Face detection logic
+│   ├── websocket_handlers.py    # WebSocket event handlers
+│   └── data.py               # Exam questions data
 │
 ├── database/
 │   ├── mongo.py              # MongoDB connection & collections
@@ -166,7 +118,7 @@ ONLINE EXAM PROCTOR SYSTEM/
 │
 ├── static/
 │   ├── style.css             # Complete stylesheet
-│   ├── webcam.js             # Webcam & violation monitoring
+│   ├── webcam.js             # Webcam & WebSocket client
 │   └── exam.js               # Exam timer & submission
 │
 └── uploads/                  # User uploaded images (created automatically)
@@ -174,8 +126,14 @@ ONLINE EXAM PROCTOR SYSTEM/
 
 ## 🔧 Configuration
 
-Edit `config.py` to customize:
+### Environment Variables (.env)
+```
+MONGO_URI=mongodb+srv://your-username:your-password@cluster.mongodb.net/your-database
+SECRET_KEY=your-secret-key-here
+FLASK_ENV=development
+```
 
+### Application Settings (config.py)
 - **EXAM_DURATION**: Exam time limit (default: 30 minutes)
 - **VIOLATION_THRESHOLD**: Suspicious score threshold (default: 50 points)
 - **FACE_DETECTION_INTERVAL**: Face check frequency (default: 5 seconds)
@@ -188,7 +146,7 @@ The system includes 5 sample MCQ questions covering:
 - Programming Languages
 - Web Technologies
 
-To add more questions, edit the `EXAM_QUESTIONS` list in `app.py`.
+To add more questions, edit `EXAM_QUESTIONS` list in `utils/data.py`.
 
 ## 📊 Violation Scoring System
 
@@ -200,35 +158,18 @@ To add more questions, edit the `EXAM_QUESTIONS` list in `app.py`.
 
 **Threshold**: Sessions with 50+ suspicious points are flagged for review.
 
-## 🐛 Troubleshooting
-
-### MongoDB Connection Failed
-- **Windows**: Start MongoDB service with `net start MongoDB`
-- **Linux/Mac**: Run `sudo systemctl start mongod`
-- Check if MongoDB is running on port 27017
-
-### Webcam Not Working
-- Grant camera permissions to your browser
-- Check if antivirus/firewall is blocking camera access
-- Ensure no other application is using the webcam
-
-### Face Recognition Installation Issues
-- On Windows: Install Visual C++ Build Tools
-- On Mac: Install cmake with `brew install cmake`
-- Use Python 3.8-3.10 for best compatibility
-
-### Port Already in Use
-- Change the port in `app.py`: `app.run(debug=True, port=5001)`
 
 ## 🔒 Security Features
 
 - ✅ Password encryption with bcrypt
 - ✅ Session-based authentication
-- ✅ SQL injection prevention (MongoDB)
+- ✅ MongoDB injection prevention
+- ✅ WebSocket-based real-time monitoring
 - ✅ Right-click disabled during exam
 - ✅ Developer tools blocked
 - ✅ Tab switch detection
 - ✅ Back button prevention during exam
+- ✅ Modular codebase with separation of concerns
 
 ## 🚀 Future Enhancements
 
@@ -256,27 +197,29 @@ To add more questions, edit the `EXAM_QUESTIONS` list in `app.py`.
 **Akshit Garg**
 - Email: akshit.garg.cs29@iilm.edu
 
-## 📄 License
+**Shaurya Srivastava**
+- Email: shaurya.srivastava.cs29@iilm.edu
 
-This project is licensed under the MIT License.
+**Ajay Kumar**
+- Email: ajay.kumar.cs28@iilm.edu
+
+**Nayan pandey**
+- Email: nayan.pandey.cs28@iilm.edu
+
+**Ayush Sharma**
+- Email: ayush.sharma.cs28@iilm.edu
+
 
 ## 🙏 Acknowledgments
 
 - OpenCV for computer vision capabilities
-- face-recognition library by Adam Geitgey
-- Flask framework for web development
-- MongoDB for flexible data storage
+- Flask-SocketIO for real-time communication
+- MongoDB Atlas for cloud database hosting
+- uv for modern Python package management
 
 ---
 
 **⚠️ Important Note**: This system is designed for educational purposes. For production use, additional security measures and compliance with examination regulations should be implemented.
-
-## 📞 Support
-
-For issues or questions:
-1. Check the Troubleshooting section above
-2. Review MongoDB and Python logs
-3. Ensure all dependencies are installed correctly
 
 ---
 

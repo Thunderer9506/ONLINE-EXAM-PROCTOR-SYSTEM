@@ -1,7 +1,10 @@
 from flask import Flask, render_template, request, jsonify, redirect, session, flash, url_for
-from flask_session import Session
+from flask_socketio import SocketIO, emit
 from database.mongo import users, violations, exam_sessions, exam_results
+from database.demo_user import create_demo_users
 from suspicious_score import get_session_score, get_violation_breakdown
+from utils.data import EXAM_QUESTIONS
+from utils.websocket_handlers import handle_connect, handle_disconnect, handle_frame, handle_heartbeat
 import bcrypt
 import datetime
 from functools import wraps
@@ -10,44 +13,13 @@ import os
 
 app = Flask(__name__)
 app.config.from_object('config.Config')
+socketio = SocketIO(app, cors_allowed_origins="*")
 
-# Initialize Flask-Session
-Session(app)
-
-# Sample exam questions
-EXAM_QUESTIONS = [
-    {
-        "id": 1,
-        "question": "What is the time complexity of binary search?",
-        "options": ["O(n)", "O(log n)", "O(n²)", "O(1)"],
-        "correct": 1
-    },
-    {
-        "id": 2,
-        "question": "Which data structure uses LIFO principle?",
-        "options": ["Queue", "Stack", "Tree", "Graph"],
-        "correct": 1
-    },
-    {
-        "id": 3,
-        "question": "What does HTML stand for?",
-        "options": ["Hyper Text Markup Language", "High Tech Modern Language", 
-                   "Home Tool Markup Language", "Hyperlinks and Text Markup Language"],
-        "correct": 0
-    },
-    {
-        "id": 4,
-        "question": "Which of the following is not a programming language?",
-        "options": ["Python", "Java", "HTML", "C++"],
-        "correct": 2
-    },
-    {
-        "id": 5,
-        "question": "What is the result of 2 ** 3 in Python?",
-        "options": ["6", "8", "9", "5"],
-        "correct": 1
-    }
-]
+# Register WebSocket event handlers
+socketio.on_event('connect', handle_connect)
+socketio.on_event('disconnect', handle_disconnect)
+socketio.on_event('frame', handle_frame)
+socketio.on_event('heartbeat', handle_heartbeat)
 
 # Authentication decorator
 def login_required(f):
@@ -55,7 +27,7 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             flash('Please login to access this page', 'error')
-            return redirect(url_for('login_page'))
+            return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -65,7 +37,7 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             flash('Please login to access this page', 'error')
-            return redirect(url_for('login_page'))
+            return redirect(url_for('login'))
         user = users.find_one({"_id": ObjectId(session['user_id'])})
         if not user or user.get('role') != 'admin':
             flash('Admin access required', 'error')
@@ -74,7 +46,7 @@ def admin_required(f):
     return decorated_function
 
 @app.route("/")
-def login_page():
+def root():
     if 'user_id' in session:
         return redirect(url_for('exam'))
     return render_template("login.html")
@@ -90,16 +62,16 @@ def register():
             # Validation
             if not email or not password or not name:
                 flash("All fields are required", "error")
-                return render_template("register.html")
+                return redirect(url_for('register'))
             
             if len(password) < 6:
                 flash("Password must be at least 6 characters", "error")
-                return render_template("register.html")
+                return redirect(url_for('register'))
             
             # Check if user already exists
             if users.find_one({"email": email}):
                 flash("Email already registered", "error")
-                return render_template("register.html")
+                return redirect(url_for('register'))
             
             # Hash password
             hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
@@ -114,49 +86,51 @@ def register():
             })
             
             flash("Registration successful! Please login.", "success")
-            return redirect(url_for('login_page'))
+            return redirect(url_for('login'))
             
         except Exception as e:
             flash(f"Registration failed: {str(e)}", "error")
-            return render_template("register.html")
+            return redirect(url_for('register'))
     
     return render_template("register.html")
 
-@app.route("/login", methods=["POST"])
+@app.route("/login", methods=["POST","GET"])
 def login():
-    try:
-        email = request.form.get("email", "").strip()
-        password = request.form.get("password", "")
-        
-        if not email or not password:
-            flash("Email and password are required", "error")
-            return redirect(url_for('login_page'))
-        
-        user = users.find_one({"email": email})
-        
-        if user and bcrypt.checkpw(password.encode(), user["password"]):
-            session['user_id'] = str(user['_id'])
-            session['user_email'] = user['email']
-            session['user_name'] = user.get('name', 'Student')
-            session['user_role'] = user.get('role', 'student')
+    if request.method == "POST":
+        try:
+            email = request.form.get("email", "").strip()
+            password = request.form.get("password", "")
             
-            # Redirect based on role
-            if user.get('role') == 'admin':
-                return redirect(url_for('dashboard'))
-            return redirect(url_for('exam'))
-        
-        flash("Invalid email or password", "error")
-        return redirect(url_for('login_page'))
-        
-    except Exception as e:
-        flash(f"Login failed: {str(e)}", "error")
-        return redirect(url_for('login_page'))
+            if not email or not password:
+                flash("Email and password are required", "error")
+                return redirect(url_for('login'))
+            
+            user = users.find_one({"email": email})
+            
+            if user and bcrypt.checkpw(password.encode(), user["password"]):
+                session['user_id'] = str(user['_id'])
+                session['user_email'] = user['email']
+                session['user_name'] = user.get('name', 'Student')
+                session['user_role'] = user.get('role', 'student')
+                
+                # Redirect based on role
+                if user.get('role') == 'admin':
+                    return redirect(url_for('dashboard'))
+                return redirect(url_for('exam'))
+            
+            flash("Invalid email or password", "error")
+            return redirect(url_for('login'))
+            
+        except Exception as e:
+            flash(f"Login failed: {str(e)}", "error")
+            return redirect(url_for('login'))
+    return render_template("login.html")
 
 @app.route("/logout")
 def logout():
     session.clear()
     flash("Logged out successfully", "success")
-    return redirect(url_for('login_page'))
+    return redirect(url_for('login'))
 
 @app.route("/exam")
 @login_required
@@ -175,7 +149,7 @@ def exam():
                           questions=EXAM_QUESTIONS,
                           user_name=session.get('user_name'))
 
-@app.route("/violation", methods=["POST"])
+@app.post("/violation")
 @login_required
 def violation():
     try:
@@ -195,11 +169,11 @@ def violation():
         return jsonify({
             "status": "logged",
             "current_score": score
-        })
+        }), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route("/submit_exam", methods=["POST"])
+@app.post("/submit_exam")
 @login_required
 def submit_exam():
     try:
@@ -248,7 +222,7 @@ def submit_exam():
             "exam_score": exam_score,
             "suspicious_score": suspicious_score,
             "violations": violation_breakdown
-        })
+        }), 200
         
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -283,7 +257,7 @@ def dashboard():
                           stats=stats,
                           recent_results=recent_results)
 
-@app.route("/api/get_questions")
+@app.get("/api/get_questions")
 @login_required
 def get_questions():
     return jsonify({"questions": EXAM_QUESTIONS})
@@ -293,6 +267,8 @@ if __name__ == "__main__":
     if not os.path.exists('uploads'):
         os.makedirs('uploads')
     
+    create_demo_users()
+    
     print("\n" + "="*50)
     print("*** Online Exam Proctor System ***")
     print("="*50)
@@ -300,5 +276,6 @@ if __name__ == "__main__":
     print(f"Demo Login: student@demo.com / password123")
     print(f"Admin Login: admin@demo.com / admin123")
     print("="*50 + "\n")
+    # create_demo_users()
     
-    app.run(debug=True, port=5000)
+    socketio.run(app, debug=True, port=5000)

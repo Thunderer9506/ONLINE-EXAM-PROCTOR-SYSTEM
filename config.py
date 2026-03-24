@@ -1,11 +1,13 @@
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
+load_dotenv()
 
 class Config:
     """Application configuration"""
     
     # Flask Settings
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
+    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
     DEBUG = True
     
     # Session Configuration
@@ -14,7 +16,7 @@ class Config:
     PERMANENT_SESSION_LIFETIME = timedelta(hours=2)
     
     # MongoDB Configuration
-    MONGO_URI = os.environ.get('MONGO_URI') or 'mongodb://localhost:27017/'
+    MONGO_URI = os.getenv('MONGO_URI',"mongodb://localhost:27017/")
     DATABASE_NAME = 'online_exam_proctor'
     
     # Upload Configuration
