@@ -18,10 +18,10 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install PyMongo
-        run: pip install pymongo
+      - name: Install dependencies
+        run: pip install pymongo python-dotenv
 
       - name: Run Ping Script
         env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_URI: ${{ secrets.MONGO_URI }}
         run: python ping_db.py
