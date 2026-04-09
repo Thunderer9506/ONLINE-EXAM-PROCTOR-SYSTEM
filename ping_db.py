@@ -9,7 +9,7 @@ def ping_mongodb():
     uri = os.getenv("MONGO_URI")
     
     if not uri:
-        print("Error: MONGODB_URI environment variable not found.")
+        print("Error: MONGO_URI environment variable not found.")
         sys.exit(1)
 
     # Create a new client and connect to the server
